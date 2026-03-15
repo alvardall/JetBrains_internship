@@ -2,17 +2,16 @@ import numpy as np
 import random
 from collections import Counter
 
-# -----------------------------
-# Utility functions
-# -----------------------------
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
 
 def preprocess(text):
     """Փոփոխել տեքստը փոքրատառ և բաժանել բառերի"""
     text = text.lower().split()
     return text
+
 
 def build_vocab(tokens, min_count=1):
     """Ստեղծել բառարան և ինդեքսներ"""
@@ -21,6 +20,7 @@ def build_vocab(tokens, min_count=1):
     word2idx = {w: i for i, w in enumerate(vocab)}
     idx2word = {i: w for w, i in word2idx.items()}
     return word2idx, idx2word
+
 
 def generate_training_data(tokens, word2idx, window_size=2):
     """Ստեղծել (center, context) զույգեր"""
@@ -36,9 +36,6 @@ def generate_training_data(tokens, word2idx, window_size=2):
                 data.append((center, context))
     return data
 
-# -----------------------------
-# Word2Vec Model
-# -----------------------------
 
 class Word2Vec:
     def __init__(self, vocab_size, embedding_dim=50, negative_samples=5, lr=0.01):
@@ -47,28 +44,23 @@ class Word2Vec:
         self.negative_samples = negative_samples
         self.lr = lr
 
-        # Input embeddings (V)
         self.W_in = np.random.randn(vocab_size, embedding_dim) * 0.01
         
-        # Output embeddings (U)
         self.W_out = np.random.randn(vocab_size, embedding_dim) * 0.01
 
     def train_pair(self, center_word, context_word):
-        v_c = self.W_in[center_word]          # center embedding
-        u_o = self.W_out[context_word]        # positive context embedding
+        v_c = self.W_in[center_word]          
+        u_o = self.W_out[context_word]        
 
-        # ----- Positive sample -----
         score_pos = np.dot(u_o, v_c)
         sig_pos = sigmoid(score_pos)
         loss = -np.log(sig_pos + 1e-10)
 
-        grad_pos = sig_pos - 1  # derivative of -log(sigmoid)
+        grad_pos = sig_pos - 1  
 
-        # Gradients
         grad_v_c = grad_pos * u_o
         grad_u_o = grad_pos * v_c
 
-        # ----- Negative samples -----
         for _ in range(self.negative_samples):
             neg_word = random.randint(0, self.vocab_size - 1)
             if neg_word == context_word:
@@ -85,7 +77,6 @@ class Word2Vec:
             grad_v_c += grad_neg * u_k
             self.W_out[neg_word] -= self.lr * grad_neg * v_c
 
-        # ----- Update parameters -----
         self.W_in[center_word] -= self.lr * grad_v_c
         self.W_out[context_word] -= self.lr * grad_u_o
 
@@ -99,9 +90,6 @@ class Word2Vec:
                 total_loss += self.train_pair(center, context)
             print(f"Epoch {epoch+1}, Loss: {total_loss:.4f}")
 
-# -----------------------------
-# Example usage
-# -----------------------------
 
 if __name__ == "__main__":
 
@@ -125,7 +113,6 @@ if __name__ == "__main__":
 
     model.train(training_data, epochs=10)
 
-    # Example: similarity
     word = "learning"
     if word in word2idx:
         vec = model.W_in[word2idx[word]]
