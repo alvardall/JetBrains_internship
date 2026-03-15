@@ -8,13 +8,11 @@ def sigmoid(x):
 
 
 def preprocess(text):
-    """Փոփոխել տեքստը փոքրատառ և բաժանել բառերի"""
     text = text.lower().split()
     return text
 
 
 def build_vocab(tokens, min_count=1):
-    """Ստեղծել բառարան և ինդեքսներ"""
     counter = Counter(tokens)
     vocab = {w for w, c in counter.items() if c >= min_count}
     word2idx = {w: i for i, w in enumerate(vocab)}
@@ -23,7 +21,6 @@ def build_vocab(tokens, min_count=1):
 
 
 def generate_training_data(tokens, word2idx, window_size=2):
-    """Ստեղծել (center, context) զույգեր"""
     data = []
     for i, word in enumerate(tokens):
         if word not in word2idx:
